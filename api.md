@@ -4,7 +4,7 @@
  
  **用法：**
  
- ```
+ ```php
  $arr = [...];//数据数组
  $rows = 10;//每页显示数据量
  $page = new Page(count($arr), $rows);

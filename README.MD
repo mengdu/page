@@ -11,11 +11,15 @@
 + 支持自定义参数
 + 支持同页面多个分页
 
+## api
+
+详细API可以看 [api.md](api.md)
+
 ## 例子
 
 **用法：**
 
-```
+```php
 $arr = [...];//数据数组
 $rows = 10;//每页显示数据量
 $page = new Page(count($arr), $rows);
