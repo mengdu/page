@@ -1,0 +1,86 @@
+/**分页**/
+.pagination{
+	border:solid 1px #DDDDDD;
+	border-radius: 4px;
+	display: block;
+	list-style: none;
+	display: inline-block;
+	padding-left: 0;
+
+}
+.pagination>li>a{
+	text-decoration: none;
+	color: #428BCA;
+}
+.pagination>li{
+	display: inline;
+	background: #FFFFFF;
+	float: left;
+	border-right: solid 1px #dddddd;
+}
+.page-style-btn,
+.page-style-link{
+	border:none;
+}
+.page-style-btn>li{
+	margin: 0 3px;
+	border: solid 1px #dddddd !important;
+	border-radius: 3px !important;
+}
+.page-style-link>li{
+	border:none;
+	border-radius:0 !important;
+}
+.pagination>li>a{
+	text-align: center;
+}
+.pagination>li:first-child{
+	border-radius: 4px 0 0 4px;
+}
+.pagination>li:last-child{
+	border-radius: 0 4px 4px 0;
+}
+.pagination>li:last-child{
+	border-right:none;
+}
+.pagination>li.active{
+	background: #127EE8;
+	color:#ffffff;
+}
+.pagination>li.disabled{
+	opacity: 0.7;
+}
+.pagination>li.active>a{
+	color:#ffffff;
+}
+.pagination>li>a{
+	float: left;
+	padding: 6px 12px;
+}
+.page-lg>li>a{
+	padding: 10px 20px;
+	font-size: 20px;
+}
+.page-sm>li>a{
+	padding: 0px 5px;
+	font-size:12px;
+}
+.pagination>li:hover{
+	background: #EAEAEA;
+}
+.pagination>li.active:hover{
+	background: #127EE8;
+	
+}
+.pagination>li.active>a{
+	cursor: default;
+}
+.pagination>li>a:hover{
+	text-decoration: none;
+}
+.page-style-link>li>a:hover{
+	text-decoration: underline;
+}
+.pagination>li.disabled>a:hover{
+	cursor: not-allowed;
+}
