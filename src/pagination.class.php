@@ -1,4 +1,30 @@
 <?php
+
+function convertUrlQuery ($url) {
+  $res = parse_url($url);
+
+  if (!$res['query']) return [];
+
+  $query = explode('&', $res['query']);
+
+  $params = array();
+
+  foreach ($query as $param) {
+    $item = explode('=', $param);
+    $params[$item[0]] = $item[1];
+  }
+  return $params;
+}
+
+function array2Query ($arr) {
+  $keys = [];
+  foreach ($arr as $key => $val) {
+    array_push($keys, $key. '=' .$val);
+  }
+
+  return join('&', $keys);
+}
+
 class Pagination {
   // 总数据量
   private $total = 0;
@@ -13,11 +39,13 @@ class Pagination {
   // 候选页码
   private $pageSizes = [5, 10, 20, 30, 40];
   
+  private $queryString = '';
+
   public $prevText = 'Prve';
   public $nextText = 'Next';
 
-  public $queryPageField = 'page';
-  public $queryPageSizeField = 'pageSize';
+  private $queryPageField = 'page';
+  private $queryPageSizeField = 'pageSize';
 
   public $hasPrevMore = false;
   public $hasNextMore = false;
@@ -25,8 +53,25 @@ class Pagination {
   function __construct ($total, $pageSize = 10) {
     $this->total = abs($total);
     $this->pageSize = $pageSize ? abs($pageSize) : 10;
-
     $this->resize();
+    $this->setField();
+  }
+
+  public function setField ($arr = []) {
+    if ($arr['page']) {
+      $this->queryPageField = $arr['page'];
+    }
+
+    if ($arr['sizes']) {
+      $this->queryPageSizeField = $arr['sizes'];
+    }
+
+    $params = convertUrlQuery($_SERVER['REQUEST_URI']);
+    // 去除分页查询字符串
+    unset($params[$this->queryPageField]);
+    unset($params[$this->queryPageSizeField]);
+
+    $this->queryString = array2Query($params);
   }
 
   private function resize () {
@@ -93,10 +138,18 @@ class Pagination {
     return $pagers;
   }
 
-  function link ($text) {
-    print_r($_SERVER["REQUEST_URI"]);
+  function link ($page, $text = null) {
+    $path = $_SERVER['SCRIPT_NAME'];
+    $queryString = $this->queryString;
 
-    return '<a href="#">'. $text .'</a>';
+    $params = [
+      $this->queryPageField. '=' .$page,
+      $this->queryPageSizeField. '=' .$this->pageSize
+    ];
+
+    $url = $path. '?' .join('&', $params).($queryString ? '&'.$queryString : '');
+
+    return '<a href="'. $url .'">'. ($text ? $text : $page) .'</a>';
   }
 
   private function pagerHTML () {
@@ -108,21 +161,21 @@ class Pagination {
     }
 
     if ($this->hasPrevMore) {
-      array_push($htmls, '<li class="m-pager-number">&laquo;</li>');
+      array_push($htmls, '<li class="m-pager-number">'. $this->link('', '&laquo;') .'</li>');
     }
 
     $len = count($pagers);
 
     for ($i = 0; $i < $len; $i++) {
-      array_push($htmls, '<li class="m-pager-number '. ($this->page === $pagers[$i] ? ' active' : '') .'">'. $pagers[$i] .'</li>');
+      array_push($htmls, '<li class="m-pager-number '. ($this->page === $pagers[$i] ? ' active' : '') .'">'. $this->link($pagers[$i]) .'</li>');
     }
 
     if ($this->hasNextMore) {
-      array_push($htmls, '<li class="m-pager-number">&raquo;</li>');
+      array_push($htmls, '<li class="m-pager-number">'. $this->link('', '&raquo;') .'</li>');
     }
 
     if ($this->pageCount > 0) {
-      array_push($htmls, '<li class="m-pager-number'. ($this->page === $this->pageCount ? ' active' : '') .'">'. $this->pageCount .'</li>');
+      array_push($htmls, '<li class="m-pager-number'. ($this->page === $this->pageCount ? ' active' : '') .'">'. $this->link($this->pageCount) .'</li>');
     }
 
     array_push($htmls, '</ul>');
