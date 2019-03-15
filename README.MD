@@ -13,6 +13,17 @@ echo $page->links(); // output pagination html
 
 ![](20190315125624.png)
 
+
+## DEMO
+
+```ls
+php -S localhost:8082 -t .
+```
+
+```text
+浏览器 打开 http://localhost:8082/examples/demo.php
+```
+
 ## API
 
 + **new Pagination($total, $pageSize)** 创建分页对象
@@ -32,12 +43,12 @@ echo $page->links(); // output pagination html
 **方法**
 
  + **Pagination::setQueryField($arr)** 设置分页查询字符串名称。
-  - **$arr['page']** 当前页字段名，默认 'page'。
-  - **$arr['size']** 分页大小字段名，默认 'pageSize'。
+    - **$arr['page']** 当前页字段名，默认 'page'。
+    - **$arr['size']** 分页大小字段名，默认 'pageSize'。
 
  + **Pagination::setQueryParams($arr)** 增加连接查询参数；`$arr` 为关联数组。
  + **Pagination::setPageSizes($arr)** 设置分页大小候选列表，默认：`[5, 10, 20, 30, 40]`。
  + **Pagination::links($layout)** 返回分页html，$layout 为布局数组。
-  - **$layout** 可以定义为 `['total', 'sizes', 'prev', 'pager', 'next']`。
+    - **$layout** 可以定义为 `['total', 'sizes', 'prev', 'pager', 'next']`。
  + **Pagination::simpleLinks()** 返回简单分页html，只有上一页和下一页按钮。
  + **Pagination::getPageData()** 返回分页的一些数据。
