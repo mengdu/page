@@ -275,4 +275,15 @@ class Pagination {
   function simpleLinks () {
     return $this->links(['prev', 'next']);
   }
+
+  function getPageData () {
+    $data = [
+      'total' => $this->total,
+      'page' => $this->page,
+      'pageSize' => $this->pageSize,
+      'pageCount' => $this->pageCount
+    ];
+
+    return $data;
+  }
 }

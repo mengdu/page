@@ -40,3 +40,4 @@ echo $page->links(); // output pagination html
  + **Pagination::links($layout)** 返回分页html，$layout 为布局数组。
   - **$layout** 可以定义为 `['total', 'sizes', 'prev', 'pager', 'next']`。
  + **Pagination::simpleLinks()** 返回简单分页html，只有上一页和下一页按钮。
+ + **Pagination::getPageData()** 返回分页的一些数据。
