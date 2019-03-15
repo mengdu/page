@@ -1,46 +1,42 @@
+# Pagination
 
-## Page
-
-`Page` 是一个简单的PHP数据分页类。支持自定义参数，支持同页面多个分页。
-
-分页结构是和boostrap中的分页结构是一样的，所以引用boostrap样式就会得到效果；当然如果页面不想引用boostrap样式可以使用本仓库里的page.css文件，这个样式与boostrap中的相差不大。
-
-## 特点
-
-+ 使用简单
-+ 支持自定义参数
-+ 支持同页面多个分页
-
-## api
-
-详细API可以看 [api.md](api.md)
-
-## 例子
-
-**用法：**
+这是一个无任何依赖的PHP分页类。
 
 ```php
-$arr = [...];//数据数组
-$rows = 10;//每页显示数据量
-$page = new Page(count($arr), $rows);
-//输出完整分页
-$page->links();
+$pageSize = abs($_GET['pageSize']);
+$pageSize = $pageSize ? $pageSize : 10;
 
-//简单分页（只有‘上一页’，‘下一页’）
-//$page->simpleLinks();
+$page = new Pagination(2000, $pageSize);
+
+echo $page->links(); // output pagination html
 ```
 
-你要传入的参数是 `总的数据长度` 和 `每页显示数据长度`；这里并没有查询数据库的过程，是的这需你自己实现，因为此分页类编写的目只是处理分页，它不局限于数据库数据分页，你也可以对数组进行分页；对数组进行分页可以使用 `array_slice` 函数。
+![](20190315125624.png)
 
-当然你可以使用分页对象构造的`limit` sql来拼接你的sql，具体的接口请看api文档。
+## API
 
-## 截图
++ **new Pagination($total, $pageSize)** 创建分页对象
 
-![](20170103233007.png)
-
-
-
+  - **$total** 数据总数。
+  - **$pageSize** 分页大小，可选，默认 10。
 
 
+**属性**
 
+ + **Pagination::prevText** 上一页按钮文字，默认 'Prev'。
+ + **Pagination::nextText** 下一页按钮文字，默认 'Next'。
+ + **Pagination::hasPrevMore** 是否显示 prev more，默认 `false`。
+ + **Pagination::hasNextMore** 是否显示 next more，默认 `false`。
+ + **Pagination::containerClassName** 分页css类名。
 
+**方法**
+
+ + **Pagination::setQueryField($arr)** 设置分页查询字符串名称。
+  - **$arr['page']** 当前页字段名，默认 'page'。
+  - **$arr['size']** 分页大小字段名，默认 'pageSize'。
+
+ + **Pagination::setQueryParams($arr)** 增加连接查询参数；`$arr` 为关联数组。
+ + **Pagination::setPageSizes($arr)** 设置分页大小候选列表，默认：`[5, 10, 20, 30, 40]`。
+ + **Pagination::links($layout)** 返回分页html，$layout 为布局数组。
+  - **$layout** 可以定义为 `['total', 'sizes', 'prev', 'pager', 'next']`。
+ + **Pagination::simpleLinks()** 返回简单分页html，只有上一页和下一页按钮。
