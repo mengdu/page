@@ -1,5 +1,4 @@
 <?php
-
 function convertUrlQuery ($url) {
   $res = parse_url($url);
 
@@ -29,13 +28,13 @@ class Pagination {
   // 总数据量
   private $total = 0;
   // 当前页
-  private $page = 3;
+  private $page = 1;
   // 分页大小
   private $pageSize = 0;
   // 页数
   private $pageCount = 0;
   // 显示页数
-  private $pagerCount = 10;
+  public $pagerCount = 10;
   // 候选页码
   private $pageSizes = [5, 10, 20, 30, 40];
   
@@ -53,17 +52,18 @@ class Pagination {
   function __construct ($total, $pageSize = 10) {
     $this->total = abs($total);
     $this->pageSize = $pageSize ? abs($pageSize) : 10;
+
     $this->resize();
-    $this->setField();
+    $this->setQueryField();
   }
 
-  public function setField ($arr = []) {
+  public function setQueryField ($arr = []) {
     if ($arr['page']) {
       $this->queryPageField = $arr['page'];
     }
 
-    if ($arr['sizes']) {
-      $this->queryPageSizeField = $arr['sizes'];
+    if ($arr['size']) {
+      $this->queryPageSizeField = $arr['size'];
     }
 
     $params = convertUrlQuery($_SERVER['REQUEST_URI']);
@@ -72,6 +72,10 @@ class Pagination {
     unset($params[$this->queryPageSizeField]);
 
     $this->queryString = array2Query($params);
+
+    if ($_GET[$this->queryPageField]) {
+      $this->page = abs($_GET[$this->queryPageField]);
+    }
   }
 
   private function resize () {
@@ -95,7 +99,7 @@ class Pagination {
     $pageCount = $this->pageCount;
     $currentPage = $this->page;
 
-    $halfPagerCount = floor(($pagerCount - 1) / 2);
+    $halfPagerCount = intval(floor(($pagerCount - 1) / 2));
   
     $showPrevMore = false;
     $showNextMore = false;
@@ -115,20 +119,20 @@ class Pagination {
     if ($showPrevMore && !$showNextMore) {
       $startPage = $pageCount - ($pagerCount - 2);
       for ($i = $startPage; $i < $pageCount; $i++) {
-        array_push($pagers, $i);
+        array_push($pagers, intval($i));
       }
     } else if (!$showPrevMore && $showNextMore) {
       for ($i = 2; $i < $pagerCount; $i++) {
-        array_push($pagers, $i);
+        array_push($pagers, intval($i));
       }
     } else if ($showPrevMore && $showNextMore) {
       $offset = floor($pagerCount / 2) - 1;
       for ($i = $currentPage - $offset; $i <= $currentPage + $offset; $i++) {
-        array_push($pagers, $i);
+        array_push($pagers, intval($i));
       }
     } else {
       for ($i = 2; $i < $pageCount; $i++) {
-        array_push($pagers, $i);
+        array_push($pagers, intval($i));
       }
     }
 
@@ -138,7 +142,7 @@ class Pagination {
     return $pagers;
   }
 
-  function link ($page, $text = null) {
+  function linkUrl ($page) {
     $path = $_SERVER['SCRIPT_NAME'];
     $queryString = $this->queryString;
 
@@ -149,29 +153,36 @@ class Pagination {
 
     $url = $path. '?' .join('&', $params).($queryString ? '&'.$queryString : '');
 
+    return $url;
+  }
+
+  function link ($page, $text = null) {
+    $url = $this->linkUrl($page);
+
     return '<a href="'. $url .'">'. ($text ? $text : $page) .'</a>';
   }
 
   private function pagerHTML () {
     $pagers = $this->pager();
     $htmls = ['<ul class="m-pager">'];
+    $pagerCountOffset = $this->pagerCount - 2;
 
     if ($this->pageCount > 0) {
       array_push($htmls, '<li class="m-pager-number'. ($this->page === 1 ? ' active' : '') .'">'. $this->link('1') .'</li>');
     }
 
     if ($this->hasPrevMore) {
-      array_push($htmls, '<li class="m-pager-number">'. $this->link('', '&laquo;') .'</li>');
+      array_push($htmls, '<li class="m-pager-number">'. $this->link($this->page - $pagerCountOffset, '&laquo;') .'</li>');
     }
 
     $len = count($pagers);
 
     for ($i = 0; $i < $len; $i++) {
-      array_push($htmls, '<li class="m-pager-number '. ($this->page === $pagers[$i] ? ' active' : '') .'">'. $this->link($pagers[$i]) .'</li>');
+      array_push($htmls, '<li class="m-pager-number'. ($this->page === $pagers[$i] ? ' active' : '') .'">'. $this->link($pagers[$i]) .'</li>');
     }
 
     if ($this->hasNextMore) {
-      array_push($htmls, '<li class="m-pager-number">'. $this->link('', '&raquo;') .'</li>');
+      array_push($htmls, '<li class="m-pager-number">'. $this->link($this->page + $pagerCountOffset, '&raquo;') .'</li>');
     }
 
     if ($this->pageCount > 0) {
@@ -183,11 +194,18 @@ class Pagination {
   }
 
   private function sizesHTML () {
-    $htmls = ['<select class="m-pagination-sizes">'];
+    $action = $path = $_SERVER['SCRIPT_NAME']. '?' .$this->queryString. '&'. $this->queryPageField .'=1';
+
+    $handlerChangeScript = "(function (e) {location.href='". $action ."' + '&". $this->queryPageSizeField ."=' + e.value;})(this)";
+
+    $htmls = [
+      '<select class="m-pagination-sizes" name="'. $this->queryPageSizeField .'" onchange="'. $handlerChangeScript .'">'
+    ];
+
     $len = count($this->pageSizes);
 
     for ($i = 0; $i < $len; $i++) {
-      array_push($htmls, '<option value="'. $this->pageSizes[$i] .'">'. $this->pageSizes[$i] .' 条/页</option>');
+      array_push($htmls, '<option value="'. $this->pageSizes[$i] .'"'. ($this->pageSize == $this->pageSizes[$i] ? 'selected="selected"' : '') .'>'. $this->pageSizes[$i] .' 条/页</option>');
     }
 
     array_push($htmls, '</select>');
@@ -195,12 +213,18 @@ class Pagination {
     return join('', $htmls);
   }
 
-  private function nextHTML () {
-    return '<a href="#" class="m-pagination-next" '. ($this->page >= $this->pageCount ? 'disabled="disabled"' : '') .'>'. $this->nextText .'</a>';
+  private function prevHTML () {
+    $page = $this->page - 1;
+    $page = $page < 1 ? 1 : $page;
+
+    return '<span  class="m-pagination-prev">'. $this->link($page, $this->prevText) .'</span>';
   }
 
-  private function prevHTML () {
-    return '<a href="#" class="m-pagination-prev" '. ($this->page <= 1 ? 'disabled="disabled"' : '') .'>'. $this->prevText .'</a>';
+  private function nextHTML () {
+    $page = $this->page + 1;
+    $page = $page > $this->pageCount ? $this->pageCount : $page;
+
+    return '<span class="m-pagination-next">'. $this->link($page, $this->nextText) .'</span>';
   }
 
   // 输出分页
@@ -231,5 +255,7 @@ class Pagination {
   }
   
   // 简单分页
-  function simpleLinks () {}
+  function simpleLinks () {
+    return $this->links(['prev', 'next']);
+  }
 }
