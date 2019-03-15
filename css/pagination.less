@@ -1,7 +1,8 @@
 .m-pagination {
   font-size: 13px;
   color: #353c44;
-  
+  line-height: 28px;
+
   &&--blod {
     font-weight: bold;
   }
@@ -11,9 +12,6 @@
     list-style: none;
     margin: 0;
     padding: 0;
-    user-select: none;
-    line-height: 28px;
-    
   }
   .m-pagination-total {
     margin-right: 5px;
@@ -32,6 +30,14 @@
     &:hover,
     &.active {
       color: #409eff;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      display: block;
+      height: 100%;
+      width: 100%;
     }
 
     &.disabled,
