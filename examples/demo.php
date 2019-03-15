@@ -37,6 +37,8 @@ $page = new Pagination(2000, $pageSize);
 
 
 $page->pagerCount = 8;
+$page->prevText = '上一页';
+$page->nextText = '下一页';
 
 echo '<div class="demo-box">';
 echo '<h3 class="title">完整例子</h3>';
