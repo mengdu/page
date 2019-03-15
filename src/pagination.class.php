@@ -75,9 +75,6 @@ class Pagination {
 
     $this->querys = $params;
 
-    echo $this->total;
-    echo $this->queryPageField;
-
     // 设置当前页码
     if (array_key_exists($this->queryPageField, $_GET) && $_GET[$this->queryPageField]) {
       $this->page = abs($_GET[$this->queryPageField]);
