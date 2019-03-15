@@ -38,7 +38,7 @@ class Pagination {
   // 候选页码
   private $pageSizes = [5, 10, 20, 30, 40];
   
-  private $queryString = '';
+  private $querys = [];
 
   public $prevText = 'Prve';
   public $nextText = 'Next';
@@ -49,20 +49,22 @@ class Pagination {
   public $hasPrevMore = false;
   public $hasNextMore = false;
 
+  public $containerClassName = '';
+
   function __construct ($total, $pageSize = 10) {
     $this->total = abs($total);
     $this->pageSize = $pageSize ? abs($pageSize) : 10;
 
-    $this->resize();
     $this->setQueryField();
+    $this->resize();
   }
 
-  public function setQueryField ($arr = []) {
-    if ($arr['page']) {
+  function setQueryField ($arr = []) {
+    if (array_key_exists('page', $arr) && $arr['page']) {
       $this->queryPageField = $arr['page'];
     }
 
-    if ($arr['size']) {
+    if (array_key_exists('size', $arr) && $arr['size']) {
       $this->queryPageSizeField = $arr['size'];
     }
 
@@ -71,11 +73,27 @@ class Pagination {
     unset($params[$this->queryPageField]);
     unset($params[$this->queryPageSizeField]);
 
-    $this->queryString = array2Query($params);
+    $this->querys = $params;
 
-    if ($_GET[$this->queryPageField]) {
+    echo $this->total;
+    echo $this->queryPageField;
+
+    // 设置当前页码
+    if (array_key_exists($this->queryPageField, $_GET) && $_GET[$this->queryPageField]) {
       $this->page = abs($_GET[$this->queryPageField]);
+    } else {
+      $this->page = 1;
     }
+  }
+
+  function setQueryParams ($arr) {
+    if (is_array($arr)) {
+      foreach($arr as $key => $val) {
+        $this->querys[$key] = $val;
+      }
+    }
+
+    return $this->querys;
   }
 
   private function resize () {
@@ -94,6 +112,7 @@ class Pagination {
     $this->pageSizes = $sizes;
   }
 
+  // 计算分页页码
   private function pager () {
     $pagerCount = $this->pagerCount;
     $pageCount = $this->pageCount;
@@ -144,7 +163,7 @@ class Pagination {
 
   function linkUrl ($page) {
     $path = $_SERVER['SCRIPT_NAME'];
-    $queryString = $this->queryString;
+    $queryString = array2Query($this->querys);
 
     $params = [
       $this->queryPageField. '=' .$page,
@@ -162,6 +181,7 @@ class Pagination {
     return '<a href="'. $url .'">'. ($text ? $text : $page) .'</a>';
   }
 
+  // 页码部分html
   private function pagerHTML () {
     $pagers = $this->pager();
     $htmls = ['<ul class="m-pager">'];
@@ -194,7 +214,7 @@ class Pagination {
   }
 
   private function sizesHTML () {
-    $action = $path = $_SERVER['SCRIPT_NAME']. '?' .$this->queryString. '&'. $this->queryPageField .'=1';
+    $action = $path = $_SERVER['SCRIPT_NAME']. '?' .array2Query($this->querys). '&'. $this->queryPageField .'=1';
 
     $handlerChangeScript = "(function (e) {location.href='". $action ."' + '&". $this->queryPageSizeField ."=' + e.value;})(this)";
 
@@ -217,14 +237,14 @@ class Pagination {
     $page = $this->page - 1;
     $page = $page < 1 ? 1 : $page;
 
-    return '<span  class="m-pagination-prev">'. $this->link($page, $this->prevText) .'</span>';
+    return '<span class="m-pagination-prev'. ($this->page === 1 ? ' disabled' : '') .'">'. $this->link($page, $this->prevText) .'</span>';
   }
 
   private function nextHTML () {
     $page = $this->page + 1;
     $page = $page > $this->pageCount ? $this->pageCount : $page;
 
-    return '<span class="m-pagination-next">'. $this->link($page, $this->nextText) .'</span>';
+    return '<span class="m-pagination-next'. ($this->page === $this->pageCount ? ' disabled' : '') .'">'. $this->link($page, $this->nextText) .'</span>';
   }
 
   // 输出分页
@@ -237,7 +257,7 @@ class Pagination {
       'next' => $this->nextHTML()
     ];
 
-    $htmls = ['<div class="m-pagination is-background">'];
+    $htmls = ['<div class="m-pagination is-background'. ($this->containerClassName ? ' '. $this->containerClassName : '') .'">'];
 
     if (!is_array($layouts)) {
       throw new Exception('One params must be an Array.');
