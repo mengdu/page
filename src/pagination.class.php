@@ -202,7 +202,7 @@ class Pagination {
       array_push($htmls, '<li class="m-pager-number">'. $this->link($this->page + $pagerCountOffset, '&raquo;') .'</li>');
     }
 
-    if ($this->pageCount > 0) {
+    if ($this->pageCount > 1) {
       array_push($htmls, '<li class="m-pager-number'. ($this->page === $this->pageCount ? ' active' : '') .'">'. $this->link($this->pageCount) .'</li>');
     }
 
